@@ -12,6 +12,16 @@ class NetworkVariables:
     def merge(self):
         return nnx.merge(self.graphdef, self.params, self.state)
 
+    def train(self):
+        model = self.merge()
+        model.train()
+        return model.split()
+
+    def eval(self):
+        model = self.merge()
+        model.eval()
+        return model.split()
+
 
 @chex.dataclass(frozen=True)
 class NetworkOutputs:

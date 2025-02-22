@@ -24,10 +24,10 @@ from evaluation import evaluate_pvp, make_mcts_policy, make_az_policy
 class Config(BaseModel):
     seed: int = 0
 
-    self_play_iterations: int = 1
+    self_play_iterations: int = 10
     self_play_batch_size: int = 256
 
-    train_iterations: int = 8
+    train_iterations: int = 16
     train_batch_size: int = 8192
 
     experience_buffer_size: int = 1_000_000
@@ -215,7 +215,7 @@ def run():
     try:
         while True:
             rng, subkey = jax.random.split(rng)
-            examples = collect_self_play_data(variables, subkey, config.self_play_iterations, config.self_play_batch_size)
+            examples = collect_self_play_data(variables.eval(), subkey, config.self_play_iterations, config.self_play_batch_size)
             print(f'Collected {len(examples)} examples')
             log['self_play/frames'] += len(examples)
 
@@ -230,7 +230,7 @@ def run():
                 batch = jax.tree_util.tree_map(lambda *x: jnp.array(x), *examples)
 
                 rng, subkey = jax.random.split(rng)
-                variables, opt_state, loss = train_step(variables, subkey, opt_state, batch)
+                variables, opt_state, loss = train_step(variables.train(), subkey, opt_state, batch)
 
                 log['train/loss'] = loss
                 log['train/frames'] += len(examples)
@@ -240,7 +240,7 @@ def run():
 
             print('Evaluating...')
             rng, subkey = jax.random.split(rng)
-            wins, draws, losses = evaluate_step(subkey, variables)
+            wins, draws, losses = evaluate_step(subkey, variables.eval())
             print(f'Wins: {wins:.2f}, Draws: {draws:.2f}, Losses: {losses:.2f}')
             log['eval/wins'] = wins
             log['eval/draws'] = draws
@@ -252,13 +252,13 @@ def run():
 
             if log['iteration'] % 10 == 0:
                 with open(f'model-{log["iteration"]}.pkl', 'wb') as f:
-                    pickle.dump(nnx.split(model)[1].to_pure_dict(), f)
+                    pickle.dump(nnx.split(variables.eval().merge())[1].to_pure_dict(), f)
 
     except KeyboardInterrupt:
         pass
 
     with open('model.pkl', 'wb') as f:
-        pickle.dump(nnx.split(model)[1].to_pure_dict(), f)
+        pickle.dump(nnx.split(variables.eval().merge())[1].to_pure_dict(), f)
 
 
 if __name__ == '__main__':
