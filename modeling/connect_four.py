@@ -49,5 +49,5 @@ class ConnectFourNetwork(nnx.Module):
         return NetworkOutputs(pi=pi, v=v)
 
     def split(self):
-        graphdef, params, state = nnx.split(self, nnx.GraphDef, nnx.Param, nnx.BatchStat)
+        graphdef, params, state = nnx.split(self, nnx.Param, nnx.BatchStat)
         return NetworkVariables(graphdef=graphdef, params=params, state=state)
