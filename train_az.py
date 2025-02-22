@@ -24,13 +24,13 @@ from evaluation import evaluate_pvp, make_mcts_policy, make_az_policy
 class Config(BaseModel):
     seed: int = 0
 
-    self_play_iterations: int = 10
+    self_play_iterations: int = 20
     self_play_batch_size: int = 256
 
-    train_iterations: int = 16
+    train_iterations: int = 80
     train_batch_size: int = 8192
 
-    experience_buffer_size: int = 1_000_000
+    experience_buffer_size: int = 2_000_000
 
     mcts_simulations: int = 32
 
@@ -195,7 +195,7 @@ def run():
 
     variables = model.split()
 
-    baseline_policy = make_mcts_policy(128)
+    baseline_policy = make_mcts_policy(512)
 
     optimizer = optax.adam(3e-4)
     opt_state = optimizer.init(variables.params)
