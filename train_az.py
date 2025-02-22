@@ -238,13 +238,14 @@ def run():
 
                 wandb.log(log)
 
-            print('Evaluating...')
-            rng, subkey = jax.random.split(rng)
-            wins, draws, losses = evaluate_step(subkey, variables.eval())
-            print(f'Wins: {wins:.2f}, Draws: {draws:.2f}, Losses: {losses:.2f}')
-            log['eval/wins'] = wins
-            log['eval/draws'] = draws
-            log['eval/losses'] = losses
+            if log['iteration'] % 10 == 0:
+                print('Evaluating...')
+                rng, subkey = jax.random.split(rng)
+                wins, draws, losses = evaluate_step(subkey, variables.eval())
+                print(f'Wins: {wins:.2f}, Draws: {draws:.2f}, Losses: {losses:.2f}')
+                log['eval/wins'] = wins
+                log['eval/draws'] = draws
+                log['eval/losses'] = losses
 
             log['iteration'] += 1
 
