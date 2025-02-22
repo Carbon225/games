@@ -195,7 +195,7 @@ def run():
 
     variables = model.split()
 
-    baseline_policy = make_mcts_policy(config.mcts_simulations)
+    baseline_policy = make_mcts_policy(128)
 
     optimizer = optax.adam(3e-4)
     opt_state = optimizer.init(variables.params)
