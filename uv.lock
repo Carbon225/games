@@ -499,7 +499,7 @@ requires-dist = [
     { name = "omegaconf", specifier = ">=2.3.0" },
     { name = "optax", specifier = ">=0.2.4" },
     { name = "pandas", specifier = ">=2.2.3" },
-    { name = "pgx", specifier = ">=2.5.0" },
+    { name = "pgx", specifier = ">=2.6.0" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "rich", specifier = ">=13.9.4" },
     { name = "tqdm", specifier = ">=4.67.1" },
@@ -1355,16 +1355,16 @@ wheels = [
 
 [[package]]
 name = "pgx"
-version = "2.5.0"
+version = "2.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jax" },
     { name = "svgwrite" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/20/be/3582834750d343ffb23457d2958eb19e14a50bcae62a5bacc9eaf79f8cbd/pgx-2.5.0.tar.gz", hash = "sha256:f8785b9bc112a4d53c37de17f426a9b5a25091b0bb48bb600a103fe504a0bc34", size = 345869 }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/36/ff7a4d602ece4ae652bdd8e0bdb1ae245457bd483041f29bb21d996c9922/pgx-2.6.0.tar.gz", hash = "sha256:d9e1ec46010182fb421f3c358d278eab42ad85c5968e2ccf3c522e0cffdcbecc", size = 345973 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/47/1c/12e083f3a594966da16a71d5d06575a6dbbb5f461f862d8c88abb33dd188/pgx-2.5.0-py3-none-any.whl", hash = "sha256:34935ad8194c6092075a5ec8ec57c3068eaade9142e10d860a145d1f662a0d27", size = 436709 },
+    { url = "https://files.pythonhosted.org/packages/1b/b7/1543c5f65dd9851032af492850141f8338b8574a0b98f448cd4bc475e2c3/pgx-2.6.0-py3-none-any.whl", hash = "sha256:35832356f091a1df16089184bc9a72a88d1c431a02f5c5499c6f2910e8db12b1", size = 436805 },
 ]
 
 [[package]]
