@@ -66,3 +66,14 @@ def make_az_policy(variables: NetworkVariables, num_simulations: int):
         logits_masked = jnp.where(action_mask, logits, -1e9)
         return logits_masked.argmax(axis=-1)
     return az_policy
+
+
+def make_model_policy(variables: NetworkVariables):
+    def model_policy(rng: PRNGKey, state: State) -> chex.Array:
+        model = variables.merge()
+        out = model(state.observation)
+        logits = out.pi
+        action_mask = state.legal_action_mask
+        logits_masked = jnp.where(action_mask, logits, -1e9)
+        return logits_masked.argmax(axis=-1)
+    return model_policy

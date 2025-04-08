@@ -18,7 +18,7 @@ import envs.bridge.bridge_env as env
 import az_agent
 from modeling.common import NetworkVariables
 from modeling.bridge import BridgeNetwork
-from evaluation import evaluate_pvp, random_policy, make_az_policy
+from evaluation import evaluate_pvp, random_policy, make_model_policy
 
 
 class Config(BaseModel):
@@ -173,10 +173,10 @@ def make_train_step(opt: optax.GradientTransformation):
     return train_step
 
 
-def make_evaluate_step(num_simulations, opponent_policy, batch_size):
+def make_evaluate_step(opponent_policy, batch_size):
     @jax.jit
     def evaluate(rng: PRNGKey, variables: NetworkVariables):
-        return evaluate_pvp(rng, make_az_policy(variables, num_simulations), opponent_policy, batch_size)
+        return evaluate_pvp(rng, make_model_policy(variables), opponent_policy, batch_size)
     return evaluate
 
 
@@ -201,7 +201,7 @@ def run():
     opt_state = optimizer.init(variables.params)
 
     train_step = make_train_step(optimizer)
-    evaluate_step = make_evaluate_step(config.mcts_simulations, baseline_policy, config.self_play_batch_size)
+    evaluate_step = make_evaluate_step(baseline_policy, config.self_play_batch_size)
 
     experience_buffer = []
 
