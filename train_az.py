@@ -14,11 +14,11 @@ import wandb
 import pickle
 
 from type_aliases import Reward, Observation, Done
-import connect_four_env as env
+import envs.bridge.bridge_env as env
 import az_agent
 from modeling.common import NetworkVariables
-from modeling.connect_four import ConnectFourNetwork
-from evaluation import evaluate_pvp, make_mcts_policy, make_az_policy
+from modeling.bridge import BridgeNetwork
+from evaluation import evaluate_pvp, random_policy, make_az_policy
 
 
 class Config(BaseModel):
@@ -185,7 +185,7 @@ def run():
 
     rng = jax.random.PRNGKey(config.seed)
 
-    model = ConnectFourNetwork(rngs=nnx.Rngs(0))
+    model = BridgeNetwork(rngs=nnx.Rngs(0))
 
     if config.load_checkpoint:
         graphdef, state = nnx.split(model)
@@ -195,7 +195,7 @@ def run():
 
     variables = model.split()
 
-    baseline_policy = make_mcts_policy(512)
+    baseline_policy = random_policy
 
     optimizer = optax.adam(3e-4)
     opt_state = optimizer.init(variables.params)

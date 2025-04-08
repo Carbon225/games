@@ -8,7 +8,7 @@ import mctx
 from functools import partial
 
 from type_aliases import Reward, Action
-import connect_four_env as env
+import envs.bridge.bridge_env as env
 
 
 def winning_action_mask(state: State) -> chex.Array:

@@ -7,7 +7,7 @@ from chex import PRNGKey
 from pgx import State
 
 from type_aliases import Observation, Reward
-import connect_four_env as env
+import envs.bridge.bridge_env as env
 import mcts_agent
 from modeling.common import NetworkVariables
 import az_agent
