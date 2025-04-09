@@ -17,7 +17,7 @@ from type_aliases import Reward, Observation, Done
 import envs.bridge.bridge_env as env
 import az_agent
 from modeling.common import NetworkVariables
-from modeling.bridge import BridgeNetwork
+from modeling.bridge import BridgeNetworkV1, BridgeNetworkV2
 from evaluation import evaluate_pvp, make_model_policy
 
 
@@ -34,7 +34,12 @@ class Config(BaseModel):
 
     mcts_simulations: int = 32
 
-    network_num_blocks: int = 18
+    network_in_height: int = 5
+    network_in_width: int = 5
+    network_in_features: int = 64
+    network_num_blocks: int = 9
+    network_conv_features: int = 64
+    network_policy_features: int = 128
 
     load_checkpoint: str | None = None
 
@@ -184,21 +189,27 @@ def make_evaluate_step(opponent_policy, batch_size):
 
 def load_baseline_variables():
     with open('models/model-bridge-v1.pkl', 'rb') as f:
-        model = BridgeNetwork(rngs=nnx.Rngs(0))
+        model = BridgeNetworkV1(rngs=nnx.Rngs(0))
         graphdef, state = nnx.split(model)
         state.replace_by_pure_dict(pickle.load(f))
         model = nnx.merge(graphdef, state)
+        model.eval()
         return model.split()
 
 
 def run():
-    wandb.init(project="connect-four", config=config.model_dump())
+    wandb.init(project="games-bridge", config=config.model_dump())
 
     rng = jax.random.PRNGKey(config.seed)
 
-    model = BridgeNetwork(
+    model = BridgeNetworkV2(
         rngs=nnx.Rngs(0),
+        in_height=config.network_in_height,
+        in_width=config.network_in_width,
+        in_features=config.network_in_features,
         num_blocks=config.network_num_blocks,
+        conv_features=config.network_conv_features,
+        policy_features=config.network_policy_features,
     )
 
     if config.load_checkpoint:
@@ -252,7 +263,7 @@ def run():
 
                 wandb.log(log)
 
-            if log['iteration'] % 10 == 0:
+            if log['iteration'] % 5 == 0:
                 print('Evaluating...')
                 rng, subkey = jax.random.split(rng)
                 wins, draws, losses = evaluate_step(subkey, variables.eval())
@@ -265,7 +276,7 @@ def run():
 
             wandb.log(log)
 
-            if log['iteration'] % 10 == 0:
+            if log['iteration'] % 5 == 0:
                 with open(f'model-{log["iteration"]}.pkl', 'wb') as f:
                     pickle.dump(nnx.split(variables.eval().merge())[1].to_pure_dict(), f)
 

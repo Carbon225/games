@@ -78,12 +78,23 @@ class PolicyHead(nnx.Module):
         return x
 
 
-class LinearActionHead(nnx.Module):
+class LinearActionHeadV1(nnx.Module):
     def __init__(self, in_height, in_width, in_features, num_actions, *, rngs: nnx.Rngs):
         self.linear = nnx.Linear(in_height * in_width * in_features, num_actions, rngs=rngs)
 
     def __call__(self, x):
         x = flatten2d(x)
+        x = self.linear(x)
+        return x
+
+
+class LinearActionHeadV2(nnx.Module):
+    def __init__(self, in_features, num_actions, *, rngs: nnx.Rngs):
+        self.linear = nnx.Linear(in_features, num_actions, rngs=rngs)
+
+    def __call__(self, x):
+        x = nnx.avg_pool(x, (x.shape[1], x.shape[2]))
+        x = x.reshape(x.shape[0], x.shape[3])
         x = self.linear(x)
         return x
 
@@ -98,7 +109,7 @@ class ConvActionHead(nnx.Module):
         return x
 
 
-class ValueHead(nnx.Module):
+class ValueHeadV1(nnx.Module):
     def __init__(self, in_height, in_width, in_features, *, rngs: nnx.Rngs):
         self.conv = nnx.Conv(in_features, 1, (1, 1), rngs=rngs)
         self.bn = nnx.BatchNorm(1, rngs=rngs)
@@ -110,6 +121,26 @@ class ValueHead(nnx.Module):
         x = self.bn(x)
         x = jax.nn.relu(x)
         x = flatten2d(x)
+        x = self.linear1(x)
+        x = jax.nn.relu(x)
+        x = self.linear2(x).squeeze(-1)
+        x = jax.nn.tanh(x)
+        return x
+
+
+class ValueHeadV2(nnx.Module):
+    def __init__(self, in_features, *, rngs: nnx.Rngs):
+        self.conv = nnx.Conv(in_features, 128, (1, 1), rngs=rngs)
+        self.bn = nnx.BatchNorm(128, rngs=rngs)
+        self.linear1 = nnx.Linear(128, 256, rngs=rngs)
+        self.linear2 = nnx.Linear(256, 1, rngs=rngs)
+
+    def __call__(self, x):
+        x = self.conv(x)
+        x = self.bn(x)
+        x = jax.nn.relu(x)
+        x = nnx.avg_pool(x, (x.shape[1], x.shape[2]))
+        x = x.reshape(x.shape[0], x.shape[3])
         x = self.linear1(x)
         x = jax.nn.relu(x)
         x = self.linear2(x).squeeze(-1)
