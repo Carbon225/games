@@ -34,6 +34,8 @@ class Config(BaseModel):
 
     mcts_simulations: int = 32
 
+    network_num_blocks: int = 18
+
     load_checkpoint: str | None = None
 
     class Config:
@@ -185,7 +187,10 @@ def run():
 
     rng = jax.random.PRNGKey(config.seed)
 
-    model = BridgeNetwork(rngs=nnx.Rngs(0))
+    model = BridgeNetwork(
+        rngs=nnx.Rngs(0),
+        num_blocks=config.network_num_blocks,
+    )
 
     if config.load_checkpoint:
         graphdef, state = nnx.split(model)

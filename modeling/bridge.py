@@ -12,13 +12,14 @@ from .common import (
 
 
 class BridgeNetwork(nnx.Module):
-    def __init__(self, *, rngs: nnx.Rngs):
+    def __init__(self, *, rngs: nnx.Rngs, in_height: int = 4, in_width: int = 4, in_features: int = 32, num_blocks: int = 9, conv_features: int = 64, policy_features: int = 4):
         self.multihot_features = 480
-        self.height = 4
-        self.width = 4
-        self.in_features = 32
-        self.conv_features = 64
-        self.policy_features = 4
+        self.height = in_height
+        self.width = in_width
+        self.in_features = in_features
+        self.conv_features = conv_features
+        self.num_blocks = num_blocks
+        self.policy_features = policy_features
         self.num_actions = 38
 
         self.projection = nnx.Linear(
@@ -29,7 +30,7 @@ class BridgeNetwork(nnx.Module):
 
         self.blocks = (
             [ConvolutionalBlock(self.in_features, self.conv_features, rngs=rngs)] +
-            [ResidualBlock(self.conv_features, self.conv_features, rngs=rngs) for _ in range(9)]
+            [ResidualBlock(self.conv_features, self.conv_features, rngs=rngs) for _ in range(self.num_blocks)]
         )
 
         self.value_head = ValueHead(
