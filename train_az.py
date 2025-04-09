@@ -18,7 +18,7 @@ import envs.bridge.bridge_env as env
 import az_agent
 from modeling.common import NetworkVariables
 from modeling.bridge import BridgeNetwork
-from evaluation import evaluate_pvp, random_policy, make_model_policy
+from evaluation import evaluate_pvp, make_model_policy
 
 
 class Config(BaseModel):
@@ -182,6 +182,15 @@ def make_evaluate_step(opponent_policy, batch_size):
     return evaluate
 
 
+def load_baseline_variables():
+    with open('models/model-bridge-v1.pkl', 'rb') as f:
+        model = BridgeNetwork(rngs=nnx.Rngs(0))
+        graphdef, state = nnx.split(model)
+        state.replace_by_pure_dict(pickle.load(f))
+        model = nnx.merge(graphdef, state)
+        return model.split()
+
+
 def run():
     wandb.init(project="connect-four", config=config.model_dump())
 
@@ -200,7 +209,7 @@ def run():
 
     variables = model.split()
 
-    baseline_policy = random_policy
+    baseline_policy = make_model_policy(load_baseline_variables())
 
     optimizer = optax.adam(3e-4)
     opt_state = optimizer.init(variables.params)
