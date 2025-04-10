@@ -34,12 +34,12 @@ class Config(BaseModel):
 
     mcts_simulations: int = 32
 
-    network_in_height: int = 5
-    network_in_width: int = 5
-    network_in_features: int = 64
+    network_in_height: int = 4
+    network_in_width: int = 4
+    network_in_features: int = 32
     network_num_blocks: int = 9
     network_conv_features: int = 64
-    network_policy_features: int = 128
+    network_policy_features: int = 256
 
     load_checkpoint: str | None = None
 
