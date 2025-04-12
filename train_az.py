@@ -14,11 +14,11 @@ import wandb
 import pickle
 
 from type_aliases import Reward, Observation, Done
-import envs.bridge.bridge_env as env
+import env
 import az_agent
 from modeling.common import NetworkVariables
-from modeling.bridge import BridgeNetworkV1, BridgeNetworkV2
-from evaluation import evaluate_pvp, make_model_policy
+from modeling.kuhn_poker import KuhnPokerNetworkV1
+from evaluation import evaluate_pvp, make_model_policy, random_policy
 
 
 class Config(BaseModel):
@@ -33,13 +33,6 @@ class Config(BaseModel):
     experience_buffer_size: int = 2_000_000
 
     mcts_simulations: int = 32
-
-    network_in_height: int = 4
-    network_in_width: int = 4
-    network_in_features: int = 32
-    network_num_blocks: int = 9
-    network_conv_features: int = 64
-    network_policy_features: int = 256
 
     load_checkpoint: str | None = None
 
@@ -187,30 +180,12 @@ def make_evaluate_step(opponent_policy, batch_size):
     return evaluate
 
 
-def load_baseline_variables():
-    with open('models/model-bridge-v1.pkl', 'rb') as f:
-        model = BridgeNetworkV1(rngs=nnx.Rngs(0))
-        graphdef, state = nnx.split(model)
-        state.replace_by_pure_dict(pickle.load(f))
-        model = nnx.merge(graphdef, state)
-        model.eval()
-        return model.split()
-
-
 def run():
-    wandb.init(project="games-bridge", config=config.model_dump())
+    wandb.init(project="games-kuhn", config=config.model_dump())
 
     rng = jax.random.PRNGKey(config.seed)
 
-    model = BridgeNetworkV2(
-        rngs=nnx.Rngs(0),
-        in_height=config.network_in_height,
-        in_width=config.network_in_width,
-        in_features=config.network_in_features,
-        num_blocks=config.network_num_blocks,
-        conv_features=config.network_conv_features,
-        policy_features=config.network_policy_features,
-    )
+    model = KuhnPokerNetworkV1(rngs=nnx.Rngs(0))
 
     if config.load_checkpoint:
         graphdef, state = nnx.split(model)
@@ -220,9 +195,9 @@ def run():
 
     variables = model.split()
 
-    baseline_policy = make_model_policy(load_baseline_variables())
+    baseline_policy = random_policy
 
-    optimizer = optax.adam(3e-4)
+    optimizer = optax.adam(5e-5)
     opt_state = optimizer.init(variables.params)
 
     train_step = make_train_step(optimizer)

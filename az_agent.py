@@ -5,7 +5,7 @@ from chex import PRNGKey
 import mctx
 
 from type_aliases import Action, Observation
-import envs.bridge.bridge_env as env
+import env
 from modeling.common import NetworkVariables
 
 
